@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>QuickBooks × RAIN Intelligence | Technical Design Specification</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --paper: #fff;
+      --ink: #14233b;
+      --muted: #52647a;
+      --line: #dce4ee;
+      --blue: #175cd3;
+      --cyan: #0b7491;
+      --soft: #eaf2ff;
+      --amber: #945b00;
+      --amberbg: #fff5d9;
+      --green: #137354;
+      --greenbg: #e7f8f0;
+      --red: #ad3434;
+      --redbg: #fff0ed;
+      --nav: #101d33;
+      --shadow: 0 8px 30px rgba(22, 43, 75, .07)
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 15px/1.65 Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Arial, sans-serif
+    }
+
+    a {
+      color: var(--blue);
+      text-decoration: none
+    }
+
+    a:hover {
+      text-decoration: underline
+    }
+
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      width: 255px;
+      background: var(--nav);
+      padding: 26px 18px;
+      overflow: auto;
+      color: #d5e0ef;
+      z-index: 10
+    }
+
+    .brand {
+      font-weight: 800;
+      color: #fff;
+      font-size: 17px;
+      letter-spacing: -.35px;
+      margin: 0 8px 6px
+    }
+
+    .brand span {
+      color: #5ac8ff
+    }
+
+    .subbrand {
+      font-size: 11px;
+      color: #96b0ca;
+      margin: 0 8px 25px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase
+    }
+
+    .nav-label {
+      color: #86a0bd;
+      text-transform: uppercase;
+      font-weight: 700;
+      font-size: 10px;
+      letter-spacing: 1.4px;
+      padding: 13px 10px 5px
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 8px 10px;
+      color: #d5e0ef;
+      border-radius: 8px;
+      font-size: 13px
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: #213754;
+      color: #fff;
+      text-decoration: none
+    }
+
+    .main {
+      margin-left: 255px;
+      max-width: 1590px;
+      padding: 38px 48px 70px
+    }
+
+    .cover {
+      background: linear-gradient(110deg, #11294b 0%, #174876 64%, #086b88 100%);
+      color: white;
+      border-radius: 18px;
+      padding: 44px 48px 42px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden
+    }
+
+    .cover:after {
+      content: "";
+      position: absolute;
+      width: 340px;
+      height: 340px;
+      border: 1px solid #ffffff29;
+      border-radius: 50%;
+      right: -70px;
+      top: -180px;
+      box-shadow: 0 0 0 55px #ffffff08, 0 0 0 110px #ffffff06
+    }
+
+    .eyebrow {
+      font-size: 11px;
+      letter-spacing: 2px;
+      font-weight: 800;
+      color: #b4e8ff;
+      text-transform: uppercase;
+      position: relative;
+      z-index: 1
+    }
+
+    .cover h1 {
+      font-size: clamp(28px, 3vw, 42px);
+      line-height: 1.14;
+      letter-spacing: -1.5px;
+      margin: 16px 0;
+      max-width: 820px;
+      position: relative;
+      z-index: 1
+    }
+
+    .cover p {
+      max-width: 810px;
+      color: #dbeafa;
+      font-size: 15px;
+      position: relative;
+      z-index: 1
+    }
+
+    .tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 25px;
+      position: relative;
+      z-index: 1
+    }
+
+    .tag {
+      border: 1px solid #ffffff45;
+      background: #ffffff16;
+      color: #fff;
+      padding: 5px 11px;
+      border-radius: 20px;
+      font-size: 12px
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 18px 0 38px
+    }
+
+    .meta>div {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      padding: 16px 18px;
+      border-radius: 12px
+    }
+
+    .meta .k {
+      font-size: 11px;
+      letter-spacing: .8px;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-weight: 800
+    }
+
+    .meta .v {
+      font-size: 14px;
+      font-weight: 750;
+      margin-top: 4px
+    }
+
+    .section {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 32px 36px;
+      margin: 22px 0;
+      box-shadow: 0 2px 12px rgba(23, 41, 70, .025);
+      scroll-margin-top: 24px
+    }
+
+    .section h2 {
+      margin: 0 0 16px;
+      font-size: 24px;
+      letter-spacing: -.65px
+    }
+
+    .section h3 {
+      margin: 26px 0 10px;
+      font-size: 17px;
+      letter-spacing: -.2px
+    }
+
+    .section h4 {
+      margin: 18px 0 7px;
+      font-size: 14px
+    }
+
+    .section p {
+      margin: 10px 0;
+      color: #33445b
+    }
+
+    .num {
+      font-size: 12px;
+      color: var(--blue);
+      font-weight: 850;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 8px
+    }
+
+    .lead {
+      font-size: 16px !important;
+      color: var(--muted) !important
+    }
+
+    .cardgrid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin: 20px 0
+    }
+
+    .tile {
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 17px 18px;
+      background: #fbfcff
+    }
+
+    .tile b {
+      display: block;
+      margin-bottom: 6px
+    }
+
+    .tile p {
+      font-size: 13px;
+      margin: 0
+    }
+
+    .callout {
+      padding: 14px 18px;
+      border-radius: 10px;
+      border-left: 4px solid var(--blue);
+      background: var(--soft);
+      color: #274160;
+      margin: 17px 0
+    }
+
+    .callout.warn {
+      background: var(--amberbg);
+      border-color: #d8931a
+    }
+
+    .callout.good {
+      background: var(--greenbg);
+      border-color: #2b9872
+    }
+
+    .callout.danger {
+      background: var(--redbg);
+      border-color: #d45a49
+    }
+
+    .callout b {
+      color: var(--ink)
+    }
+
+    ul,
+    ol {
+      padding-left: 21px
+    }
+
+    li {
+      margin: 5px 0
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 18px 0;
+      display: table
+    }
+
+    th {
+      text-align: left;
+      background: #edf3fa;
+      color: #2c4665;
+      font-size: 12px;
+      letter-spacing: .15px
+    }
+
+    td,
+    th {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 12px;
+      vertical-align: top
+    }
+
+    tr:nth-child(even) td {
+      background: #fafcff
+    }
+
+    .tablewrap {
+      overflow-x: auto
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: .9em;
+      background: #eef2f8;
+      padding: 2px 5px;
+      border-radius: 4px
+    }
+
+    pre {
+      background: #111e32;
+      color: #d9ebff;
+      padding: 19px 22px;
+      border-radius: 12px;
+      font: 12.5px/1.65 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      white-space: pre;
+      overflow: auto
+    }
+
+    pre code {
+      background: none;
+      color: inherit;
+      padding: 0
+    }
+
+    .diagram {
+      border: 1px solid #d4e2f0;
+      border-radius: 13px;
+      padding: 24px;
+      background: radial-gradient(circle at 30% 10%, #f0f8ff, #fbfdff 70%);
+      margin: 18px 0
+    }
+
+    .arch {
+      display: grid;
+      grid-template-columns: 1fr 45px 1fr 45px 1fr;
+      gap: 8px;
+      align-items: center;
+      text-align: center
+    }
+
+    .node {
+      background: white;
+      border: 1px solid #bfd1e6;
+      border-radius: 10px;
+      padding: 17px 10px;
+      min-height: 93px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 9px #183b5911
+    }
+
+    .node b {
+      font-size: 13px
+    }
+
+    .node small {
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 5px
+    }
+
+    .arr {
+      font-weight: 900;
+      color: #2788a8;
+      font-size: 24px
+    }
+
+    .note {
+      font-size: 12px !important;
+      color: #6d7b8c !important
+    }
+
+    .pill {
+      display: inline-block;
+      border-radius: 50px;
+      padding: 2px 9px;
+      font-size: 11px;
+      font-weight: 750;
+      background: #e9f1ff;
+      color: #2356ad;
+      white-space: nowrap
+    }
+
+    .pill.open {
+      background: var(--amberbg);
+      color: var(--amber)
+    }
+
+    .pill.secure {
+      background: var(--greenbg);
+      color: var(--green)
+    }
+
+    .pill.no {
+      background: var(--redbg);
+      color: var(--red)
+    }
+
+    .steps {
+      counter-reset: item;
+      list-style: none;
+      padding-left: 0
+    }
+
+    .steps li {
+      position: relative;
+      padding: 7px 0 10px 47px;
+      min-height: 45px
+    }
+
+    .steps li:before {
+      counter-increment: item;
+      content: counter(item);
+      position: absolute;
+      top: 7px;
+      left: 0;
+      border-radius: 50%;
+      background: #e9f1ff;
+      color: #125ac6;
+      width: 29px;
+      height: 29px;
+      display: grid;
+      place-items: center;
+      font-weight: 800
+    }
+
+    .footer {
+      text-align: center;
+      padding: 25px;
+      color: #708398;
+      font-size: 12px
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 12px;
+      gap: 10px
+    }
+
+    .btn {
+      background: white;
+      border: 1px solid #b9cbe0;
+      border-radius: 8px;
+      color: #22496e;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 9px 14px;
+      cursor: pointer
+    }
+
+    .btn:hover {
+      background: #eef5ff
+    }
+
+    .twocol {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 13px
+    }
+
+    .mini {
+      background: #f6f9fd;
+      border: 1px solid #e0e9f2;
+      padding: 15px;
+      border-radius: 10px
+    }
+
+    .mini h4 {
+      margin: 0 0 6px
+    }
+
+    .tocmobile {
+      display: none
+    }
+
+    .checklist li {
+      list-style: none;
+      margin: 9px 0
+    }
+
+    .checklist li::before {
+      content: '□';
+      color: #2578be;
+      font-weight: 900;
+      margin-right: 10px
+    }
+
+    .kpi {
+      font-size: 23px;
+      color: #1555a7;
+      font-weight: 800
+    }
+
+    details {
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      margin: 10px 0;
+      padding: 11px 15px;
+      background: #fcfdff
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 700
+    }
+
+    .cols {
+      columns: 2;
+      column-gap: 30px
+    }
+
+    @media(max-width:1100px) {
+      .main {
+        padding: 28px 24px
+      }
+
+      .meta {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      .cardgrid {
+        grid-template-columns: repeat(2, 1fr)
+      }
+    }
+
+    @media(max-width:790px) {
+      .sidebar {
+        display: none
+      }
+
+      .main {
+        margin: 0;
+        padding: 14px
+      }
+
+      .cover {
+        padding: 30px 25px
+      }
+
+      .section {
+        padding: 25px 20px
+      }
+
+      .tocmobile {
+        display: block;
+        background: white;
+        border: 1px solid var(--line);
+        padding: 12px 18px;
+        border-radius: 10px;
+        margin: 12px 0
+      }
+
+      .arch {
+        grid-template-columns: 1fr
+      }
+
+      .arr {
+        transform: rotate(90deg)
+      }
+
+      .cardgrid,
+      .twocol {
+        grid-template-columns: 1fr
+      }
+
+      .cols {
+        columns: 1
+      }
+
+      .meta {
+        grid-template-columns: 1fr 1fr
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        font-size: 11px
+      }
+
+      .sidebar,
+      .toolbar,
+      .tocmobile {
+        display: none
+      }
+
+      .main {
+        margin: 0;
+        padding: 0;
+        max-width: none
+      }
+
+      .cover {
+        border-radius: 0;
+        box-shadow: none;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact
+      }
+
+      .meta {
+        margin: 12px 0
+      }
+
+      .section {
+        break-inside: avoid;
+        box-shadow: none;
+        padding: 18px 14px;
+        border-color: #dde4ec;
+        margin: 12px 0
+      }
+
+      h2,
+      h3 {
+        break-after: avoid
+      }
+
+      pre {
+        white-space: pre-wrap;
+        word-break: break-word
+      }
+
+      .diagram,
+      .callout {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <aside class="sidebar">
+    <div class="brand">QuickBooks <span>× RAIN</span></div>
+    <div class="subbrand">Technical Design / v1.0</div>
+    <div class="nav-label">Overview</div><a href="#summary">01 Executive summary</a><a href="#scope">02 Scope &
+      assumptions</a><a href="#architecture">03 Architecture</a><a href="#contracts">04 API contract</a>
+    <div class="nav-label">Implementation</div><a href="#credentials">05 API key security</a><a href="#components">06
+      Salesforce components</a><a href="#features">07 Feature specifications</a><a href="#tenancy">08 Multi-company
+      isolation</a><a href="#resilience">09 Reliability</a>
+    <div class="nav-label">Release</div><a href="#security">10 AppExchange review</a><a href="#testing">11 Test
+      strategy</a><a href="#deployment">12 Deployment & rollback</a><a href="#roadmap">13 Roadmap</a><a href="#risks">14
+      Risks and decisions</a><a href="#acceptance">15 Acceptance criteria</a>
+  </aside>
+  <main class="main">
+    <div class="toolbar"><button class="btn" onclick="window.print()">Print / Save as PDF</button><button class="btn"
+        onclick="document.querySelectorAll('details').forEach(d=>d.open=true)">Expand technical notes</button></div>
+    <header class="cover">
+      <div class="eyebrow">Solution Architecture · Technical Specification</div>
+      <h1>QuickBooks + RAIN Intelligence Integration</h1>
+      <p>Optional AI intelligence layer for a Salesforce QuickBooks managed package, implemented through direct Apex
+        HTTPS callouts with API key authentication — without Named Credentials, External Credentials, or a RAIN package
+        dependency.</p>
+      <div class="tags"><span class="tag">API-key authentication</span><span class="tag">Direct Apex
+          callouts</span><span class="tag">AppExchange security</span><span class="tag">Multi-company
+          isolation</span><span class="tag">Backward compatible</span></div>
+    </header>
+    <div class="meta">
+      <div>
+        <div class="k">Document status</div>
+        <div class="v">Proposed technical design</div>
+      </div>
+      <div>
+        <div class="k">Version / date</div>
+        <div class="v">1.0 · 19 Nov 2026</div>
+      </div>
+      <div>
+        <div class="k">Target platform</div>
+        <div class="v">Salesforce managed package</div>
+      </div>
+      <div>
+        <div class="k">Implementation state</div>
+        <div class="v">Not source-verified</div>
+      </div>
+    </div>
+    <nav class="tocmobile">
+      <details>
+        <summary>Jump to a section</summary>
+        <div id="mobilelinks"></div>
+      </details>
+    </nav>
+    <section class="section" id="summary"><span class="num">01 / Executive Summary</span>
+      <h2>Purpose & design decision</h2>
+      <p class="lead">Augment the existing Salesforce QuickBooks integration with AI-powered diagnostics, mapping
+        suggestions, duplicate analysis, and a contextual assistant, while keeping core synchronization deterministic
+        and independent.</p>
+      <div class="cardgrid">
+        <div class="tile"><b>Optional intelligence</b>
+          <p>RAIN failures must not block existing QuickBooks synchronization.</p>
+        </div>
+        <div class="tile"><b>No package dependency</b>
+          <p>All external communication happens over a verified RAIN REST contract.</p>
+        </div>
+        <div class="tile"><b>Secure by design</b>
+          <p>API keys stay server-side; external payloads are minimized and authorized.</p>
+        </div>
+      </div>
+      <div class="callout warn"><b>Evidence boundary:</b> This document is based on the agreed requirements, not
+        inspection of the local source repositories. The RAIN API authentication header, endpoints, packaging model,
+        credential-store suitability, and existing class names require code verification before implementation.</div>
+      <div class="tablewrap">
+        <table>
+          <tr>
+            <th>Decision</th>
+            <th>Specified approach</th>
+          </tr>
+          <tr>
+            <td>Communication</td>
+            <td>Salesforce Apex <code>HttpRequest</code> → HTTPS RAIN API</td>
+          </tr>
+          <tr>
+            <td>Authentication</td>
+            <td>RAIN-issued API key, attached in the header required by the verified API contract</td>
+          </tr>
+          <tr>
+            <td>Endpoint</td>
+            <td><code>https://intelligence.rainos.ai</code> with allowlisted paths</td>
+          </tr>
+          <tr>
+            <td>Callout authorization</td>
+            <td>Remote Site Setting; HTTPS/TLS validation</td>
+          </tr>
+          <tr>
+            <td>Secret management</td>
+            <td>Server-only package-protected secret store, subject to package-model validation</td>
+          </tr>
+          <tr>
+            <td>Excluded</td>
+            <td>Named Credentials, External Credentials, RAIN managed-package installation</td>
+          </tr>
+        </table>
+      </div>
+    </section>
+    <section class="section" id="scope"><span class="num">02 / Scope</span>
+      <h2>Scope, non-goals & source locations</h2>
+      <div class="twocol">
+        <div class="mini">
+          <h4>Included</h4>
+          <ul>
+            <li>RAIN key configuration and connection testing</li>
+            <li>Sync error analysis and remediation suggestions</li>
+            <li>Dynamic field-mapping recommendations</li>
+            <li>Advisory duplicate analysis</li>
+            <li>Contextual read-only assistant</li>
+            <li>Automated tests, security and upgrade assessment</li>
+          </ul>
+        </div>
+        <div class="mini">
+          <h4>Not included in first release</h4>
+          <ul>
+            <li>Automatic AI-generated record writes or merges</li>
+            <li>Unapproved production deployment</li>
+            <li>Changes to RAIN API server contracts unless required and authorized</li>
+            <li>Replacing existing QuickBooks auth or sync logic</li>
+            <li>Unverified RAIN tools, models, or endpoints</li>
+          </ul>
+        </div>
+      </div>
+      <p>First discovery task: inventory QuickBooks synchronization entry points, company records, mapping persistence,
+        Apex tests, RAIN API routes/middleware, and relevant package metadata. Any API method or class name listed below
+        is a proposed interface until validated against repository code.</p>
+    </section>
+    <section class="section" id="architecture"><span class="num">03 / Architecture</span>
+      <h2>Logical system architecture</h2>
+      <div class="diagram">
+        <div class="arch">
+          <div class="node"><b>Salesforce QuickBooks UI</b><small>QBSetup · QBSync · Mapping · Assistant</small></div>
+          <div class="arr">→</div>
+          <div class="node"><b>Apex RAIN services</b><small>Authorization · Context · API Client · Parser</small></div>
+          <div class="arr">→</div>
+          <div class="node"><b>RAIN REST API</b><small>https://intelligence.rainos.ai</small></div>
+        </div>
+        <p class="note" style="text-align:center">Outbound TLS callout via Remote Site Setting; API key inserted only in
+          server-side Apex. No direct browser-to-RAIN traffic.</p>
+      </div>
+      <h3>Application boundaries</h3>
+      <div class="tablewrap">
+        <table>
+          <tr>
+            <th>Layer</th>
+            <th>Responsibility</th>
+            <th>Trust boundary</th>
+          </tr>
+          <tr>
+            <td>Lightning UI</td>
+            <td>Configuration, review, assistant interactions</td>
+            <td>Untrusted input; never holds persisted secret</td>
+          </tr>
+          <tr>
+            <td>Apex controller</td>
+            <td>Permission checks, validated parameters, safe DTOs</td>
+            <td>User → server authorization</td>
+          </tr>
+          <tr>
+            <td>Domain services</td>
+            <td>Company resolution, metadata validation, payload minimization</td>
+            <td>Company and record access scope</td>
+          </tr>
+          <tr>
+            <td>Transport service</td>
+            <td>Key retrieval, approved request construction, callout</td>
+            <td>Salesforce → third-party endpoint</td>
+          </tr>
+          <tr>
+            <td>RAIN response parser</td>
+            <td>Schema validation, normalized output, untrusted text treatment</td>
+            <td>External response → Salesforce logic</td>
+          </tr>
+        </table>
+      </div>
+      <h3>Primary sequence: analyze a failed sync</h3>
+      <pre><code>User → QBSync LWC: Analyze with RAIN(logId)
+QBSync LWC → Apex Controller: analyze(logId, companyId)
+Apex Controller → Authorization Service: Check user + company + log access
+Authorization Service → Context Builder: Retrieve minimum sanitized diagnostics
+Context Builder → API Client: Typed request payload
+API Client → Protected Secret Store: Read API key (server-side only)
+API Client → RAIN API: HTTPS request + authenticated header
+RAIN API → API Client: Structured AI response
+API Client → Parser: Validate envelope, size and fields
+Parser → Controller: Safe explanatory DTO
+Controller → LWC: Display advisory analysis
+
+Failure path: Return sanitized error; normal QuickBooks sync unaffected</code></pre>
+    </section>
+    <section class="section" id="contracts"><span class="num">04 / API Contracts</span>
+      <h2>Contract discovery & typed interface</h2>
+      <div class="callout warn"><b>Open contract questions:</b> Exact RAIN authentication header, diagnostic/chat
+        endpoints, request envelope, rate-limit behavior, tool protocol, and response schema are not established.
+        Resolve from RAIN source before coding integrations.</div>
+      <div class="tablewrap">
+        <table>
+          <tr>
+            <th>Capability</th>
+            <th>Proposed client operation</th>
+            <th>RAIN endpoint</th>
+            <th>Verification</th>
+          </tr>
+          <tr>
+            <td>Connection test</td>
+            <td><code>validateConnection()</code></td>
+            <td>TBD — safe probe</td>
+            <td><span class="pill open">Unverified</span></td>
+          </tr>
+          <tr>
+            <td>Diagnostics</td>
+            <td><code>analyzeSyncFailure()</code></td>
+            <td>TBD — AI analysis/chat</td>
+            <td><span class="pill open">Unverified</span></td>
+          </tr>
+          <tr>
+            <td>Mapping</td>
+            <td><code>suggestMappings()</code></td>
+            <td>TBD — AI analysis/chat</td>
+            <td><span class="pill open">Unverified</span></td>
+          </tr>
+          <tr>
+            <td>Duplicates</td>
+            <td><code>assessCandidateMatches()</code></td>
+            <td>TBD — AI analysis/chat</td>
+            <td><span class="pill open">Unverified</span></td>
+          </tr>
+          <tr>
+            <td>Assistant</td>
+            <td><code>sendAssistantMessage()</code></td>
+            <td>TBD — conversation endpoint</td>
+            <td><span class="pill open">Unverified</span></td>
+          </tr>
+        </table>
+      </div>
+      <h3>Illustrative diagnostic request (not a verified RAIN payload)</h3>
+      <pre><code>{
+  "feature": "SYNC_DIAGNOSTICS",
+  "requestId": "generated-correlation-id",
+  "companyContext": { "connectionReference": "authorized-internal-reference" },
+  "syncContext": {
+    "entityType": "Customer",
+    "operation": "UPDATE",
+    "status": "FAILED",
+    "errorCategory": "VALIDATION",
+    "sanitizedError": "Required mapped field missing"
+  },
+  "mappingContext": [
+    { "sourceField": "DisplayName", "targetField": "Name", "type": "String" }
+  ]
+}</code></pre>
+      <p>Use a minimal company reference only when the RAIN contract truly requires one. Prefer local context
+        authorization over transmitting raw realm IDs or record identifiers externally. Define strict limits on prompt
+        size, response size, serialization depth, and allowed fields.</p>
+      <h3>Illustrative Apex transport (pseudocode, not drop-in code)</h3>
+      <pre><code>// Apex implementation sketch — adapt to verified RAIN API and package model
+HttpRequest request = new HttpRequest();
+request.setEndpoint(BASE_URL + ALLOWED_PATH_FOR_OPERATION);
+request.setMethod('POST');
+request.setHeader('Content-Type', 'application/json');
+request.setHeader(VERIFIED_RAIN_AUTH_HEADER, apiKeyFromProtectedStore);
+request.setTimeout(30000);
+request.setBody(JSON.serialize(typedPayload));
+HttpResponse response = new Http().send(request);
+// Validate status, content size, JSON structure; redact errors and secrets.</code></pre>
+      <p>Path must come from an internal allowlist, never arbitrary LWC input. The API key is retrieved only inside the
+        transport service. The UI receives safe status and response DTOs, never the secret.</p>
+    </section>
+    <section class="section" id="credentials"><span class="num">05 / Authentication & Secrets</span>
+      <h2>API key lifecycle without Named Credentials</h2>
+      <p>Use the RAIN-issued API key for outgoing requests. Its header name must be taken from the RAIN authentication
+        middleware: it could be <code>x-api-key</code>, <code>Authorization</code>, or another specified header.</p>
+      <div class="callout danger"><b>Security gate:</b> Remote Site Settings are endpoint allowlists, not a secure
+        credential vault. Do not ship the integration with plaintext API keys in Apex, unprotected metadata, browser
+        storage, Custom Labels, or logs. If a suitable secret store cannot be proven for the actual packaging model,
+        block authenticated deployment until resolved.</div>
+      <h3>Proposed lifecycle</h3>
+      <ol class="steps">
+        <li><b>Provision:</b> A privileged administrator enters an API key once into a masked field in QBSetup.</li>
+        <li><b>Persist:</b> Apex validates permission and writes to a proven package-protected server-only store; never
+          echoes the value.</li>
+        <li><b>Test:</b> The server calls a verified harmless RAIN endpoint and reports only connection status.</li>
+        <li><b>Use:</b> API client reads the key and sets the verified request header during an allowed HTTPS callout.
+        </li>
+        <li><b>Rotate:</b> Replace the key atomically with an approved key and track metadata, not the secret.</li>
+        <li><b>Remove:</b> Clear local key/disable integration; revoke at RAIN only if an authorized revocation API is
+          confirmed.</li>
+      </ol>
+      <h3>Credential storage decision matrix</h3>
+      <div class="tablewrap">
+        <table>
+          <tr>
+            <th>Option</th>
+            <th>Assessment</th>
+            <th>Decision</th>
+          </tr>
+          <tr>
+            <td>Protected Custom Setting</td>
+            <td>Candidate for managed-package Apex-only access; test 1GP/2GP behavior, subscriber provisioning, exposure
+              surfaces and size limits</td>
+            <td><span class="pill open">Validate first</span></td>
+          </tr>
+          <tr>
+            <td>Protected Custom Metadata</td>
+            <td>Protection and runtime mutation / subscriber administration characteristics differ; avoid assuming fit
+            </td>
+            <td><span class="pill open">Evaluate</span></td>
+          </tr>
+          <tr>
+            <td>Custom Apex Crypto design</td>
+            <td>Requires independent secure encryption-key custody; encryption with adjacent recoverable key is weak
+            </td>
+            <td><span class="pill open">Only if justified</span></td>
+          </tr>
+          <tr>
+            <td>Named / External Credentials</td>
+            <td>Explicitly excluded by project requirements</td>
+            <td><span class="pill no">Do not use</span></td>
+          </tr>
+          <tr>
+            <td>Plaintext label / unprotected record / localStorage</td>
+            <td>Inadequate protection for long-lived API secret</td>
+            <td><span class="pill no">Prohibited</span></td>
+          </tr>
+        </table>
+      </div>
+      <h3>Admin UI data contract</h3>
+      <p><code>getRainStatus()</code> should return only <code>enabled</code>, <code>configured</code>,
+        <code>lastValidatedAt</code>, <code>sanitizedStatus</code>, and feature toggles. The one-time
+        <code>saveRainApiKey(key)</code> operation must require explicit administrative authorization and must never
+        echo the submitted key.</p>
+    </section>
+    <section class="section" id="components"><span class="num">06 / Salesforce Components</span>
+      <h2>Proposed implementation inventory</h2>
+      <div class="tablewrap">
+        <table>
+          <tr>
+            <th>Component</th>
+            <th>Responsibility</th>
+            <th>Key safeguard</th>
+          </tr>
+          <tr>
+            <td><code>QBRainConfigService</code></td>
+            <td>Non-secret feature flags, status</td>
+            <td>Admin-only writes</td>
+          </tr>
+          <tr>
+            <td><code>QBRainApiKeyService</code></td>
+            <td>Secure key write/read/rotate/remove</td>
+            <td>Internal-only secret retrieval</td>
+          </tr>
+          <tr>
+            <td><code>QBRainApiClient</code></td>
+            <td>Approved direct HTTPS requests</td>
+            <td>Allowlisted paths, redaction</td>
+          </tr>
+          <tr>
+            <td><code>QBRainAuthorizationService</code></td>
+            <td>Company/user authorization</td>
+            <td>IDOR and tenant separation</td>
+          </tr>
+          <tr>
+            <td><code>QBRainContextBuilder</code></td>
+            <td>Minimal diagnostics/metadata payloads</td>
+            <td>CRUD/FLS and data minimization</td>
+          </tr>
+          <tr>
+            <td><code>QBRainResponseParser</code></td>
+            <td>Typed AI output normalization</td>
+            <td>Untrusted content, schema validation</td>
+          </tr>
+          <tr>
+            <td><code>QBRainDiagnosticsService</code></td>
+            <td>Failure explanations</td>
+            <td>Read-only advisory action</td>
+          </tr>
+          <tr>
+            <td><code>QBRainMappingService</code></td>
+            <td>Mapping suggestions</td>
+            <td>Server-side describe checks</td>
+          </tr>
+          <tr>
+            <td><code>QBRainDuplicateService</code></td>
+            <td>Ambiguous match assessment</td>
+            <td>No automatic linking / merge</td>
+          </tr>
+          <tr>
+            <td><code>QBRainAssistantController</code></td>
+            <td>Contextual assistant endpoints</td>
+            <td>Read-only tool allowlist</td>
+          </tr>
+          <tr>
+            <td><code>qbRainAssistant</code> LWC</td>
+            <td>Assistant chat panel</td>
+            <td>Safe output rendering</td>
+          </tr>
+          <tr>
+            <td>QBSetup extension</td>
+            <td>Key config and feature toggles</td>
+            <td>Masked, never rehydrated secret</td>
+          </tr>
+          <tr>
+            <td>QBSync extension</td>
+            <td>Analyze with RAIN action</td>
+            <td>Log access authorization</td>
+          </tr>
+          <tr>
+            <td>Mapping extension</td>
+            <td>Suggestion review/acceptance</td>
+            <td>Explicit approval before saving</td>
+          </tr>
+        </table>
+      </div>
+      <p class="note">These names are design candidates, not confirmed files in the source repository. Preserve existing
+        naming, namespaces, and package contracts where relevant.</p>
+      <h3>Metadata & permissions</h3>
+      <ul>
+        <li>Remote Site Setting for <code>https://intelligence.rainos.ai</code>, packaged/configured according to
+          installed-package behavior.</li>
+        <li>Protected configuration only after verifying the packaging and provisioning model.</li>
+        <li>Custom Permission or equivalent authorization gate for RAIN configuration management.</li>
+        <li>Read-only feature permissions for users who can view diagnostics and assistant results.</li>
+        <li>No raw API key in permission set, package source, or post-install scripts.</li>
+      </ul>
+    </section>
+    <section class="section" id="features"><span class="num">07 / Feature Specifications</span>
+      <h2>Five delivery capabilities</h2>
+      <h3>F1. RAIN setup & connection test <span class="pill secure">Foundation</span></h3>
+      <p>Extend QBSetup with Enable RAIN, one-time masked API key entry, Test Connection, Replace Key, Remove Key,
+        status, and feature toggles. A non-admin must not be able to manage credentials. Enabling RAIN without a
+        verified key must be rejected or presented as not configured.</p>
+      <h3>F2. AI sync diagnostics <span class="pill">P1</span></h3>
+      <p>Add <b>Analyze with RAIN</b> on eligible QBSync log rows. Send error category, entity type, sync phase, and
+        minimum authorized mapping context. Render summary, probable cause, remediation and uncertainty; use the
+        existing log UI for navigation. Advisory only.</p>
+      <h3>F3. Mapping suggestions <span class="pill">P1</span></h3>
+      <p>From the current dynamic source entity and target Salesforce object, send accessible schema metadata. Show
+        suggested source/target fields with explanation and confidence when returned. Validate target type, writability,
+        required fields and mapping conflicts server-side. User explicitly accepts before persistence.</p>
+      <h3>F4. Advisory duplicate analysis <span class="pill">P2</span></h3>
+      <p>First run deterministic realm + QuickBooks entity identity matching, then configured duplicate rules. Only
+        unresolved ambiguity enters AI analysis. AI output never creates an identity link, overwrites existing values,
+        or merges records without a separate validated user action.</p>
+      <h3>F5. Contextual assistant <span class="pill">P2</span></h3>
+      <p>Embed a compact <code>qbRainAssistant</code> LWC with company context, chat, suggestions, errors, reset, and
+        keyboard support. Provide read-only, server-authorized tool results such as sync summary, failed logs, mapping
+        state, and connection status. RAIN remote tool calling is optional until contract verification.</p>
+      <div class="callout good"><b>Execution rule:</b> AI features should run as user-invoked or appropriately
+        asynchronous auxiliary operations, never as a mandatory step before a core QuickBooks sync can succeed.</div>
+    </section>
+    <section class="section" id="tenancy"><span class="num">08 / Data Isolation</span>
+      <h2>Company and tenant boundaries</h2>
+      <p>RAIN API key scope and QuickBooks connected-company scope are separate concerns. Determine if the RAIN key is
+        per Salesforce installation, per tenant, or per QuickBooks connected company from actual RAIN server
+        authorization logic.</p>
+      <div class="diagram">
+        <div class="arch">
+          <div class="node"><b>Selected Company A</b><small>Explicit company context</small></div>
+          <div class="arr">→</div>
+          <div class="node"><b>Apex authorization</b><small>User access + realm binding + log ownership</small></div>
+          <div class="arr">→</div>
+          <div class="node"><b>Company A payload</b><small>Minimum metadata / diagnostics only</small></div>
+        </div>
+      </div>
+      <ul>
+        <li>Always resolve server-side company records; an LWC-supplied <code>realmId</code> is not sufficient
+          authorization.</li>
+        <li>Prevent silent fallback to default/current company in Batch/Queueable flows.</li>
+        <li>On company switch, invalidate and reload assistant context; do not reuse another company's result cache.
+        </li>
+        <li>Data access honors appropriate sharing and CRUD/FLS; privileged integration access must be explicitly
+          justified and bounded.</li>
+        <li>Store correlation IDs, rather than sensitive source data, in new diagnostics where feasible.</li>
+        <li>Never assume an instance-wide RAIN API key grants unrestricted QuickBooks company access.</li>
+      </ul>
+    </section>
+    <section class="section" id="resilience"><span class="num">09 / Reliability</span>
+      <h2>Failure handling and operational behavior</h2>
+      <div class="tablewrap">
+        <table>
+          <tr>
+            <th>Condition</th>
+            <th>Handling</th>
+            <th>Core QuickBooks sync</th>
+          </tr>
+          <tr>
+            <td>RAIN disabled / missing key</td>
+            <td>Hide actions or show setup-required state</td>
+            <td>Unaffected</td>
+          </tr>
+          <tr>
+            <td>401/403</td>
+            <td>Show sanitized authentication/authorization failure, never expose key</td>
+            <td>Unaffected</td>
+          </tr>
+          <tr>
+            <td>429</td>
+            <td>Bounded backoff respecting API guidance; no unbounded queue chains</td>
+            <td>Unaffected</td>
+          </tr>
+          <tr>
+            <td>5xx / transient timeout</td>
+            <td>Controlled retry only for idempotent read/analysis requests</td>
+            <td>Unaffected</td>
+          </tr>
+          <tr>
+            <td>Malformed AI response</td>
+            <td>Reject schema, show safe fallback, record correlation ID</td>
+            <td>Unaffected</td>
+          </tr>
+          <tr>
+            <td>Company disconnected</td>
+            <td>Reject company-context access and new AI actions</td>
+            <td>Disconnection policy applies</td>
+          </tr>
+          <tr>
+            <td>External service data leak concern</td>
+            <td>Disable feature, scrub logs, initiate incident process</td>
+            <td>Unaffected unless incident policy requires otherwise</td>
+          </tr>
+        </table>
+      </div>
+      <p>Instrument status codes, latency, error category, feature, correlation ID, and selected internal company
+        reference. Avoid storing entire prompts, responses, or personally identifiable record values by default; apply
+        explicit retention policy.</p>
+    </section>
+    <section class="section" id="security"><span class="num">10 / AppExchange Security</span>
+      <h2>Security review controls & evidence</h2>
+      <div class="callout warn"><b>Approval distinction:</b> Design alignment and successful scans do not mean
+        Salesforce has approved the managed package. Final AppExchange Security Review status is determined by
+        Salesforce.</div>
+      <div class="tablewrap">
+        <table>
+          <tr>
+            <th>Control</th>
+            <th>Implementation requirement</th>
+            <th>Verification evidence</th>
+          </tr>
+          <tr>
+            <td>Authorization</td>
+            <td>Server-side permissions on every exposed action, not UI hiding</td>
+            <td>Restricted user tests</td>
+          </tr>
+          <tr>
+            <td>CRUD / FLS / sharing</td>
+            <td>Appropriate user-mode or <code>stripInaccessible</code> enforcement; explicit privilege rationale</td>
+            <td>CRUD/FLS and sharing tests</td>
+          </tr>
+          <tr>
+            <td>Injection</td>
+            <td>Describe-validated identifiers, bound SOQL values, internal endpoint paths</td>
+            <td>Static analysis and negative tests</td>
+          </tr>
+          <tr>
+            <td>Credential protection</td>
+            <td>Secret never in LWC output, logs, labels or source</td>
+            <td>Serialization audit, package-context test</td>
+          </tr>
+          <tr>
+            <td>Callout security</td>
+            <td>HTTPS, Remote Site Setting, fixed host, API header</td>
+            <td>Mock request assertions</td>
+          </tr>
+          <tr>
+            <td>AI output handling</td>
+            <td>No unvalidated tool execution or unrestricted HTML</td>
+            <td>Prompt-injection and rendering tests</td>
+          </tr>
+          <tr>
+            <td>Privacy</td>
+            <td>Minimal outbound context, external processing disclosure</td>
+            <td>Data classification and redaction review</td>
+          </tr>
+          <tr>
+            <td>Package safety</td>
+            <td>Namespace/upgrade compatibility, no RAIN package dependencies</td>
+            <td>Install/upgrade smoke tests</td>
+          </tr>
+          <tr>
+            <td>Security scanning</td>
+            <td>Current Salesforce Code Analyzer AppExchange rules; applicable partner scans</td>
+            <td>Actual scan artifact and remediation log</td>
+          </tr>
+        </table>
+      </div>
+      <h3>Required security documents</h3>
+      <ul class="cols">
+        <li>Security architecture and data flow</li>
+        <li>External endpoint inventory</li>
+        <li>Threat model / trust boundaries</li>
+        <li>Authorization and CRUD/FLS control matrix</li>
+        <li>Credential lifecycle design</li>
+        <li>Privacy/retention classification</li>
+        <li>Scanner findings and dispositions</li>
+        <li>Manual security test evidence</li>
+        <li>Admin configuration instructions</li>
+        <li>Package installation/upgrade guide</li>
+      </ul>
+    </section>
+    <section class="section" id="testing"><span class="num">11 / Verification</span>
+      <h2>Test strategy & quality gates</h2>
+      <h3>Automated Apex tests</h3>
+      <div class="tablewrap">
+        <table>
+          <tr>
+            <th>Suite</th>
+            <th>Representative cases</th>
+          </tr>
+          <tr>
+            <td>Key management</td>
+            <td>Admin saves/rotates/removes key; non-admin rejected; serialized responses do not contain secrets</td>
+          </tr>
+          <tr>
+            <td>HTTP transport</td>
+            <td>Successful mock, 400/401/403/429/5xx, timeout, malformed JSON, oversized response, endpoint allowlist
+            </td>
+          </tr>
+          <tr>
+            <td>Company security</td>
+            <td>Wrong realm, unauthorized company, company switching, disconnected company, stale async context</td>
+          </tr>
+          <tr>
+            <td>Diagnostics</td>
+            <td>Failed-log access and sanitization; safe AI response parsing</td>
+          </tr>
+          <tr>
+            <td>Mapping</td>
+            <td>Dynamic objects, CRUD/FLS, invalid API names, incompatible types, prior mappings preserved</td>
+          </tr>
+          <tr>
+            <td>Duplicates</td>
+            <td>Deterministic-first matching, ambiguous candidates, no auto-merge or auto-link</td>
+          </tr>
+          <tr>
+            <td>Assistant</td>
+            <td>Read-only tool allowlist, prompt injection, invalid responses, reset/permissions</td>
+          </tr>
+          <tr>
+            <td>Regression</td>
+            <td>QuickBooks sync with RAIN on/off/unavailable; existing OAuth, mappings, batches</td>
+          </tr>
+        </table>
+      </div>
+      <h3>Security & release gates</h3>
+      <ol>
+        <li>Repository compilation and Apex tests pass, with documented coverage.</li>
+        <li>Static analysis findings assessed and valid critical/high vulnerabilities remediated.</li>
+        <li>Package-context secret storage validated in supported package generation.</li>
+        <li>Strict company isolation and restricted-user tests pass.</li>
+        <li>Actual RAIN API routes and header scheme verified and documented.</li>
+        <li>Installation/upgrade from existing QuickBooks package version validated in test org.</li>
+        <li>Manual AppExchange submission artifacts prepared; no false claim of approval.</li>
+      </ol>
+    </section>
+    <section class="section" id="deployment"><span class="num">12 / Deployment</span>
+      <h2>Installation, enablement & rollback</h2>
+      <h3>Pre-deployment checks</h3>
+      <ul class="checklist">
+        <li>Confirm whether package is 1GP or 2GP and its namespace constraints.</li>
+        <li>Approve credential storage model and verify subscriber configuration.</li>
+        <li>Verify RAIN API header, approved paths, rate limits and key scope.</li>
+        <li>Review Remote Site Setting packaging and post-install state.</li>
+        <li>Define custom permission and admin access policy.</li>
+        <li>Complete required privacy disclosures and integration opt-in.</li>
+      </ul>
+      <h3>Deployment sequence</h3>
+      <ol class="steps">
+        <li>Deploy optional metadata and permissions; keep RAIN disabled.</li>
+        <li>Deploy Apex client/services, DTOs, unit tests, and new LWC code.</li>
+        <li>Install or upgrade in a sandbox/scratch org representative of a subscriber.</li>
+        <li>Configure/activate Remote Site Setting as required by the package model.</li>
+        <li>Admin registers an API key and tests connectivity.</li>
+        <li>Enable diagnostics, then mapping; later enable duplicate analysis and assistant.</li>
+        <li>Run QuickBooks sync regression and monitor sanitized RAIN telemetry.</li>
+      </ol>
+      <h3>Rollback</h3>
+      <p>Disable RAIN feature flags and remove local API key configuration. Existing QuickBooks sync paths must remain
+        independent. Revert new UI exposure if necessary, but avoid deleting durable metadata or existing package
+        records. If a secret may have been compromised, rotate/revoke it at RAIN; local removal is not equivalent to
+        remote revocation.</p>
+    </section>
+    <section class="section" id="roadmap"><span class="num">13 / Delivery Plan</span>
+      <h2>Phased implementation roadmap</h2>
+      <div class="tablewrap">
+        <table>
+          <tr>
+            <th>Phase</th>
+            <th>Deliverable</th>
+            <th>Exit criteria</th>
+          </tr>
+          <tr>
+            <td>0 · Discovery</td>
+            <td>QuickBooks integration map and verified RAIN API contract</td>
+            <td>No invented endpoints</td>
+          </tr>
+          <tr>
+            <td>1 · Foundation</td>
+            <td>Secure key store, API client, Remote Site Setting, setup UI</td>
+            <td>Key not exposed; connection test works</td>
+          </tr>
+          <tr>
+            <td>2 · Diagnostics</td>
+            <td>Failed-sync analysis action and response panel</td>
+            <td>Authorized, sanitized, explanatory output</td>
+          </tr>
+          <tr>
+            <td>3 · Mapping</td>
+            <td>Dynamic mapping recommendations</td>
+            <td>User approval and server-side validation</td>
+          </tr>
+          <tr>
+            <td>4 · Duplicates</td>
+            <td>Ambiguous candidate advisory analysis</td>
+            <td>No automatic merge/link</td>
+          </tr>
+          <tr>
+            <td>5 · Assistant</td>
+            <td>Contextual chat and read-only tools</td>
+            <td>Company access and tool allowlist enforced</td>
+          </tr>
+          <tr>
+            <td>6 · Release</td>
+            <td>Regression, package validation, security evidence</td>
+            <td>No unresolved critical security blockers</td>
+          </tr>
+        </table>
+      </div>
+    </section>
+    <section class="section" id="risks"><span class="num">14 / Risks & Open Decisions</span>
+      <h2>Items requiring source-level confirmation</h2>
+      <div class="tablewrap">
+        <table>
+          <tr>
+            <th>ID</th>
+            <th>Question / risk</th>
+            <th>Resolution required</th>
+          </tr>
+          <tr>
+            <td>R-01</td>
+            <td>How exactly is a RAIN API key transmitted?</td>
+            <td>Inspect middleware and API docs; assert header with callout mocks</td>
+          </tr>
+          <tr>
+            <td>R-02</td>
+            <td>Which RAIN endpoints support AI analysis and chat?</td>
+            <td>Inventory route definitions and typed schemas</td>
+          </tr>
+          <tr>
+            <td>R-03</td>
+            <td>What is API key tenancy scope?</td>
+            <td>Verify server-side authorization / tenant binding</td>
+          </tr>
+          <tr>
+            <td>R-04</td>
+            <td>Is a Protected Custom Setting safe and writable in the actual package type?</td>
+            <td>Test with packaged and subscriber org contexts</td>
+          </tr>
+          <tr>
+            <td>R-05</td>
+            <td>What data does RAIN store, log, or retain?</td>
+            <td>Review service privacy and retention behavior</td>
+          </tr>
+          <tr>
+            <td>R-06</td>
+            <td>What QuickBooks objects and mappings are truly implemented?</td>
+            <td>Inventory source, metadata, and test coverage</td>
+          </tr>
+          <tr>
+            <td>R-07</td>
+            <td>What happens when RAIN is unavailable?</td>
+            <td>Prove isolation from core sync via failure tests</td>
+          </tr>
+          <tr>
+            <td>R-08</td>
+            <td>Are remote AI tool calls supported?</td>
+            <td>Verify protocol; otherwise use secure local read-only context retrieval</td>
+          </tr>
+        </table>
+      </div>
+      <div class="callout"><b>Engineering rule:</b> If a verified, secure credential storage mechanism cannot be
+        delivered under the no-Named-Credentials requirement, mark authentication as blocked rather than shipping a
+        plaintext workaround.</div>
+    </section>
+    <section class="section" id="acceptance"><span class="num">15 / Definition of Done</span>
+      <h2>Acceptance criteria</h2>
+      <ul class="checklist">
+        <li>QuickBooks package installs and operates without the RAIN managed package.</li>
+        <li>RAIN authentication uses an actual validated API key contract.</li>
+        <li>No Named Credentials or External Credentials are introduced.</li>
+        <li>Secrets remain server-side under validated protected storage.</li>
+        <li>All RAIN callouts use HTTPS and allowlisted Remote Site Settings.</li>
+        <li>RAIN setup supports masked key registration, replacement, connection test, and removal.</li>
+        <li>Diagnostics works for authorized sync logs without changing records.</li>
+        <li>Mapping suggestions work with dynamically selected Salesforce objects.</li>
+        <li>Duplicate AI remains advisory and deterministic matching remains authoritative.</li>
+        <li>Assistant is company-aware and limited to authorized read-only tools.</li>
+        <li>Multi-company data isolation is verified with tests.</li>
+        <li>Core sync works unchanged when RAIN is disabled, invalid, or unavailable.</li>
+        <li>CRUD/FLS, sharing, injection, XSS, and privacy controls are tested.</li>
+        <li>Actual static analysis reports and honest test evidence are retained.</li>
+        <li>Deployment, subscriber setup and rollback procedures are documented.</li>
+      </ul>
+      <div class="callout good"><b>Target outcome:</b> An optional, secure AI layer that improves QuickBooks
+        administration and synchronization diagnostics without weakening company isolation, security-review posture, or
+        core integration availability.</div>
+    </section>
+    <div class="footer">QuickBooks × RAIN Intelligence · Technical Design v1.0 · 19 November 2026 · Architecture
+      specification, not a completed source-code audit</div>
+  </main>
+  <script>const sidebarLinks = [...document.querySelectorAll('.sidebar a')]; document.getElementById('mobilelinks').innerHTML = sidebarLinks.map(a => '<a style="display:block;padding:5px" href="' + a.getAttribute('href') + '">' + a.textContent + '</a>').join(''); const obs = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) { sidebarLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id)) } }), { rootMargin: '-10% 0px -75% 0px' }); document.querySelectorAll('.section').forEach(s => obs.observe(s));</script>
+</body>
+
+</html>
